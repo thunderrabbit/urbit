@@ -1,19 +1,19 @@
 |%
 +$  serial  @uvH
 ::
-+$  letter
++$  content
   $%  [%text text=cord]
       [%url url=cord]
       [%code expression=cord output=(list tank)]
       [%me narrative=cord]
   ==
 ::
-+$  envelope
++$  message
   $:  uid=serial
       number=@
       author=ship
       when=time
-      =letter
+      =content
   ==
 ::
 +$  config
@@ -21,20 +21,20 @@
       read=@
   ==
 ::
-+$  mailbox
++$  chatroom
   $:  =config
-      envelopes=(list envelope)
+      messages=(list message)
   ==
 ::
-+$  inbox  (map path mailbox)
++$  inbox  (map path chatroom)
 ::
 +$  chat-configs  (map path config)
 ::
 +$  chat-action
-  $%  [%create =ship =path]         ::  %create: create a mailbox at ~ship/path
-      [%delete =path]               ::  %delete: delete a mailbox at path
-      [%message =path =envelope]    ::  %message: append a message to mailbox
-      [%read =path]                 ::  %read: set mailbox to read
+  $%  [%create =ship =path]         ::  %create: create chatroom at ~ship/path
+      [%delete =path]               ::  %delete: delete chatroom at path
+      [%message =path =message]     ::  %message: append message to chatroom
+      [%read =path]                 ::  %read: set chatroom to read
   ==
 ::
 +$  chat-update

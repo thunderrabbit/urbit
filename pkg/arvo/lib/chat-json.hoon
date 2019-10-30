@@ -37,42 +37,36 @@
   %-  need
   ?~  exp  [~ '' ~]
   :+  ~  u.exp
-  ::NOTE  when sending, if output is an empty list, chat-store will evaluate
+  ::  NOTE  when sending, if output is an empty list, chat-store will evaluate
   (fall ((ot output+(ar dank) ~) a) ~)
 ::
-++  lett
-  |=  =letter
+++  conte
+  |=  =content
   ^-  json
   =,  enjs:format
-  ?-  -.letter
-      %text
-    (frond %text s+text.letter)
-  ::
-      %url
-    (frond %url s+url.letter)
+  ?-  -.content
+      %text  (frond %text s+text.content)
+      %url   (frond %url s+url.content)
+      %me    (frond %me s+narrative.content)
   ::
       %code
     %+  frond  %code
     %-  pairs
-    :~  [%expression s+expression.letter]
-        [%output a+(turn output.letter tank)]
+    :~  [%expression s+expression.content]
+        [%output a+(turn output.content tank)]
     ==
-  ::
-      %me
-    (frond %me s+narrative.letter)
-  ::
   ==
 ::
-++  enve
-  |=  =envelope
+++  mesg
+  |=  =message
   ^-  json
   =,  enjs:format
   %-  pairs
-  :~  [%uid s+(scot %uv uid.envelope)]
-      [%number (numb number.envelope)]
-      [%author (ship author.envelope)]
-      [%when (time when.envelope)]
-      [%letter (lett letter.envelope)]
+  :~  [%uid s+(scot %uv uid.message)]
+      [%number (numb number.message)]
+      [%author (ship author.message)]
+      [%when (time when.message)]
+      [%content (conte content.message)]
   ==
 ::
 ++  conf
@@ -88,9 +82,9 @@
   |=  =inbox
   ^-  chat-configs
   %-  ~(run by inbox)
-  |=  =mailbox
+  |=  =chatroom
   ^-  config
-  config.mailbox
+  config.chatroom
 ::
 ++  configs-to-json
   |=  cfg=chat-configs
@@ -110,12 +104,12 @@
   %+  frond  %chat-initial
   %-  pairs
   %+  turn  ~(tap by box)
-  |=  [pax=^path =mailbox]
+  |=  [pax=^path =chatroom]
   ^-  [cord json]
   :-  (spat pax)
   %-  pairs
-  :~  [%envelopes [%a (turn envelopes.mailbox enve)]]
-      [%config (conf config.mailbox)]
+  :~  [%messages [%a (turn messages.chatroom mesg)]]
+      [%config (conf config.chatroom)]
   ==
 ::
 ++  update-to-json
@@ -130,7 +124,7 @@
       :-  %message
       %-  pairs
       :~  [%path (path path.upd)]
-          [%envelope (enve envelope.upd)]
+          [%message (mesg message.upd)]
       ==
     ?:  =(%read -.upd)
       ?>  ?=(%read -.upd)
@@ -181,22 +175,22 @@
   ++  message
     %-  ot
     :~  [%path pa]
-        [%envelope envelope]
+        [%message msg]
     ==
   ::
   ++  read
     (ot [%path pa] ~)
   ::
-  ++  envelope
+  ++  msg
     %-  ot
     :~  [%uid seri]
         [%number ni]
         [%author (su ;~(pfix sig fed:ag))]
         [%when di]
-        [%letter letter]
+        [%content content]
     ==
   ::
-  ++  letter
+  ++  content
     %-  of
     :~  [%text so]
         [%url so]

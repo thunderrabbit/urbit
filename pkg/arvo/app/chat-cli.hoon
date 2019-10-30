@@ -28,7 +28,7 @@
       cli=[=bone state=sole-share:sole-sur]         ::  console id & state
   ==
 ::
-+$  mail  [source=target envelope]
++$  mail  [source=target message]
 +$  target  [=ship =path]
 ::
 +$  glyph  char
@@ -36,7 +36,7 @@
 ::
 +$  command
   $%  [%target (set target)]                        ::  set messaging target
-      [%say letter]                                 ::  send message
+      [%say content]                                ::  send message
       [%eval cord hoon]                             ::  send #-message
     ::
       [%create chat-security path (unit glyph)]     ::  create chat
@@ -104,12 +104,13 @@
         (scot %da now.bowl)
         /all/noun
     ==
+
   |-  ^-  (quip move _this)
   ?~  inbox  [~ this]
   =*  path  p.n.inbox
-  =*  mailbox  q.n.inbox
+  =*  chatroom  q.n.inbox
   =/  =target  (path-to-target path)
-  =^  moves-n  this  (read-envelopes target envelopes.mailbox)
+  =^  moves-n  this  (read-messages target messages.chatroom)
   =^  moves-l  this  $(inbox l.inbox)
   =^  moves-r  this  $(inbox r.inbox)
   [:(weld moves-n moves-l moves-r) this]
@@ -131,7 +132,7 @@
 ++  target-to-path
   |=  target
   [(scot %p ship) path]
-::  +path-to-target: deduces a target from a mailbox path
+::  +path-to-target: deduces a target from a chatroom path
 ::
 ++  path-to-target
   |=  =path
@@ -177,7 +178,7 @@
   :-  [prompt:sh-out ~]
   ::  start with fresh sole state
   this(state.cli *sole-share:sole-sur)
-::  +diff-chat-update: get new mailboxes & messages
+::  +diff-chat-update: get new chatrooms & messages
 ::
 ++  diff-chat-update
   |=  [=wire upd=chat-update]
@@ -185,15 +186,15 @@
   ?+  -.upd  [~ this]
     %create   (notice-create +.upd)
     %delete   [[(show-delete:sh-out (path-to-target path.upd)) ~] this]
-    %message  (read-envelope (path-to-target path.upd) envelope.upd)
+    %message  (read-message (path-to-target path.upd) message.upd)
   ==
 ::
-++  read-envelopes
-  |=  [=target envs=(list envelope)]
+++  read-messages
+  |=  [=target msgs=(list message)]
   ^-  (quip move _this)
-  ?~  envs  [~ this]
-  =^  moves-i  this  (read-envelope target i.envs)
-  =^  moves-t  this  $(envs t.envs)
+  ?~  msgs  [~ this]
+  =^  moves-i  this  (read-message target i.msgs)
+  =^  moves-t  this  $(msgs t.msgs)
   [(weld moves-i moves-t) this]
 ::
 ++  notice-create
@@ -272,25 +273,26 @@
   ?:  (~(has in lax) source)
     source
   $(grams t.grams)
-::  +read-envelope: add envelope to state and show it to user
+::  +read-message: add message to state and show it to user
 ::
-++  read-envelope
-  |=  [=target =envelope]
+++  read-message
+  |=  [=target =message]
   ^-  (quip move _this)
-  ?:  (~(has in known) [target uid.envelope])
-    ::NOTE  we no-op only because edits aren't possible
+  ?:  (~(has in known) [target uid.message])
+    ::  NOTE  we no-op only because edits aren't possible
     [~ this]
-  :-  (show-envelope:sh-out target envelope)
+  :-  (show-message:sh-out target message)
   %_  this
-    known  (~(put in known) [target uid.envelope])
-    grams  [[target envelope] grams]
+    known  (~(put in known) [target uid.message])
+    grams  [[target message] grams]
     count  +(count)
   ==
+
 ::
 ::  +sh-in: handle user input
 ::
 ++  sh-in
-  ::NOTE  interestingly, adding =,  sh-out breaks compliation
+  ::  NOTE  interestingly, adding =,  sh-out breaks compliation
   |%
   ::  +sole: apply sole action
   ::
@@ -490,11 +492,11 @@
     ++  message
       ;~  pose
         ;~(plug (cold %eval hax) expr)
-        (stag %say letter)
+        (stag %say content)
       ==
-    ::  +letter: simple messages
+    ::  +content: simple messages
     ::
-    ++  letter
+    ++  content
       ;~  pose
         (stag %url turl)
         (stag %me ;~(pfix vat text))
@@ -598,7 +600,7 @@
       ^-  (quip move _this)
       =.  audience  tars
       [[prompt:sh-out ~] this]
-    ::  +create: new local mailbox
+    ::  +create: new local chatroom
     ::
     ++  create
       |=  [security=chat-security =path gyf=(unit char)]
@@ -676,7 +678,7 @@
       ?:  =(u.whitelist allow)
         [%add ships path]
       [%remove ships path]
-    ::  +join: sync with remote mailbox
+    ::  +join: sync with remote chatroom
     ::
     ++  join
       |=  [=target gyf=(unit char)]
@@ -692,7 +694,7 @@
       %^  act  %do-join  %chat-view
       :-  %chat-view-action
       [%join target]
-    ::  +leave: unsync & destroy mailbox
+    ::  +leave: unsync & destroy chatroom
     ::
     ::TODO  allow us to "mute" local chats using this
     ++  leave
@@ -707,7 +709,7 @@
     ::  +say: send messages
     ::
     ++  say
-      |=  =letter
+      |=  =content
       ^-  (quip move _this)
       =/  =serial  (shaf %msg-uid eny.bowl)
       :_  this(eny.bowl (shax eny.bowl))
@@ -717,7 +719,7 @@
       %^  act  %out-message  %chat-hook
       :-  %chat-action
       :+  %message  (target-to-path target)
-      [serial *@ our-self now.bowl letter]
+      [serial *@ our-self now.bowl content]
     ::  +eval: run hoon, send code and result as message
     ::
     ::    this double-virtualizes and clams to disable .^ for security reasons
@@ -843,7 +845,7 @@
             prompt:sh-out
         ==
       --
-    ::  +chats: display list of local mailboxes
+    ::  +chats: display list of local chatrooms
     ::
     ++  chats
       ^-  (quip move _this)
@@ -925,14 +927,14 @@
       ~(show tr i.all)
       $(all t.all, fir |)
     ==
-  ::  +show-envelope: print incoming message
+  ::  +show-message: print incoming message
   ::
   ::    every five messages, prints the message number also.
   ::    if the message mentions the user's (shortened) ship name,
   ::    and the %notify flag is set, emit a bell.
   ::
-  ++  show-envelope
-    |=  [=target =envelope]
+  ++  show-message
+    |=  [=target =message]
     ^-  (list move)
     %+  weld
       ^-  (list move)
@@ -941,7 +943,7 @@
       =+  num=(scow %ud count)
       %-  print
       (runt [(sub 13 (lent num)) '-'] "[{num}]")
-    =+  lis=~(render-inline mr target envelope)
+    =+  lis=~(render-inline mr target message)
     ?~  lis  ~
     :_  ~
     %+  effect  %mor
@@ -953,13 +955,13 @@
         ==
       [%txt t]
     [%mor [%txt t] [%bel ~] ~]
-  ::  +show-create: print mailbox creation notification
+  ::  +show-create: print chatroom creation notification
   ::
   ++  show-create
     |=  =target
     ^-  move
     (note "new: {~(phat tr target)}")
-  ::  +show-delete: print mailbox deletion notification
+  ::  +show-delete: print chatroom deletion notification
   ::
   ++  show-delete
     |=  =target
@@ -1007,8 +1009,8 @@
   ::  +phat: render target fully
   ::
   ::    renders as ~ship/path.
-  ::    for local mailboxes, renders just /path.
-  ::    for sponsor's mailboxes, renders ^/path.
+  ::    for local chatrooms, renders just /path.
+  ::    for sponsor's chatrooms, renders ^/path.
   ::
   ::NOTE  but, given current implementation, all will be local
   ::
@@ -1036,7 +1038,7 @@
 ::
 ++  mr
   |_  $:  source=target
-          envelope
+          message
       ==
   ::  +activate: produce sole-effect for printing message details
   ::
@@ -1055,19 +1057,19 @@
   ::
   ++  body
     |-  ^-  sole-effect:sole-sur
-    ?-  -.letter
+    ?-  -.content
         ?(%text %me)
-      =/  pre=tape  ?:(?=(%me -.letter) "@ " "")
-      tan+~[leaf+"{pre}{(trip +.letter)}"]
+      =/  pre=tape  ?:(?=(%me -.content) "@ " "")
+      tan+~[leaf+"{pre}{(trip +.content)}"]
     ::
         %url
-      url+url.letter
+      url+url.content
     ::
         %code
-      =/  texp=tape  ['>' ' ' (trip expression.letter)]
+      =/  texp=tape  ['>' ' ' (trip expression.content)]
       :-  %mor
       |-  ^-  (list sole-effect:sole-sur)
-      ?:  =("" texp)  [tan+output.letter ~]
+      ?:  =("" texp)  [tan+output.content ~]
       =/  newl  (find "\0a" texp)
       ?~  newl  [txt+texp $(texp "")]
       =+  (trim u.newl texp)
@@ -1134,20 +1136,20 @@
     =|  pre=(unit (pair ? tape))
     |=  wyd=@ud
     ^-  (list tape)
-    ?-  -.letter
+    ?-  -.content
         %code
-      =+  texp=(trip expression.letter)
+      =+  texp=(trip expression.content)
       =+  newline=(find "\0a" texp)
       =?  texp  ?=(^ newline)
         (weld (scag u.newline texp) "  ...")
       :-  (truncate wyd '#' ' ' texp)
-      ?~  output.letter  ~
+      ?~  output.content  ~
       =-  [' ' (truncate (dec wyd) ' ' -)]~
-      ~(ram re (snag 0 `(list tank)`output.letter))
+      ~(ram re (snag 0 `(list tank)`output.content))
     ::
         %url
       :_  ~
-      =+  ful=(trip url.letter)
+      =+  ful=(trip url.content)
       =+  pef=q:(fall pre [p=| q=""])
       ::  clean up prefix if needed.
       =?  pef  =((scag 1 (flop pef)) " ")
@@ -1174,12 +1176,12 @@
       ::  glyph prefix
       =/  pef=tape
         ?:  &(?=(^ pre) p.u.pre)  q.u.pre
-        ?:  ?=(%me -.letter)  " "
+        ?:  ?=(%me -.content)  " "
         =-  (weld - q:(fall pre [p=| q=" "]))
         ~(glyph tr source)
       =/  lis=(list tape)
         %+  simple-wrap
-          `tape``(list @)`(tuba (trip +.letter))
+          `tape``(list @)`(tuba (trip +.content))
         (sub wyd (min (div wyd 2) (lent pef)))
       =+  lef=(lent pef)
       =+  ?:((gth (lent lis) 0) (snag 0 lis) "")

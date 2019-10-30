@@ -60,14 +60,14 @@ export class ChatScreen extends Component {
       });
     } else if (Object.keys(props.inbox).length === 0) {
       props.history.push('/~chat');
-    } else if (props.envelopes.length - prevProps.envelopes.length >= 200) {
+    } else if (props.messages.length - prevProps.messages.length >= 200) {
       this.hasAskedForMessages = false;
     }
   }
 
   updateReadNumber() {
     const { props, state } = this;
-    if (props.read < props.envelopes.length) {
+    if (props.read < props.messages.length) {
       props.api.chat.read(state.station);
     }
   }
@@ -75,13 +75,13 @@ export class ChatScreen extends Component {
   askForMessages() {
     const { props, state } = this;
     
-    if (state.numPages * 100 < props.envelopes.length - 400 ||
+    if (state.numPages * 100 < props.messages.length - 400 ||
         this.hasAskedForMessages) {
       return;
     }
 
-    if (props.envelopes.length > 0) {
-      let end = props.envelopes[0].number;
+    if (props.messages.length > 0) {
+      let end = props.messages[0].number;
       if (end > 0) {
         let start = ((end - 400) > 0) ? end - 400 : 0;
 
@@ -148,7 +148,7 @@ export class ChatScreen extends Component {
   render() {
     const { props, state } = this;
 
-    let messages = props.envelopes.slice(0);
+    let messages = props.messages.slice(0);
     
     let lastMsgNum = (messages.length > 0) ?
       messages.length : 0;

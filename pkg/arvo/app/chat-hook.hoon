@@ -69,8 +69,8 @@
   ::  scry permissions to check if write is permitted
   ?.  (permitted-scry [(scot %p src.bol) %chat (weld path.act /write)])
     ~
-  =:  author.envelope.act  src.bol
-      when.envelope.act  now.bol
+  =:  author.message.act  src.bol
+      when.message.act  now.bol
   ==
   [ost.bol %poke / [our.bol %chat-store] [%chat-action act]]~
 ::
@@ -80,7 +80,7 @@
   ?-  -.act
       %add-owned
     ?>  (team:title our.bol src.bol)
-    =/  chat-path  [%mailbox path.act]
+    =/  chat-path  [%chatroom path.act]
     ?:  (~(has by synced) path.act)
       [~ this]
     =.  synced  (~(put by synced) path.act our.bol)
@@ -91,7 +91,7 @@
   ::
       %add-synced
     ?>  (team:title our.bol src.bol)
-    =/  chat-path  [%mailbox (scot %p ship.act) path.act]
+    =/  chat-path  [%chatroom (scot %p ship.act) path.act]
     ?:  (~(has by synced) [(scot %p ship.act) path.act])
       [~ this]
     =.  synced  (~(put by synced) [(scot %p ship.act) path.act] ship.act)
@@ -106,13 +106,13 @@
       ::  delete one of our.bol own paths
       :_  %_  this
             synced  (~(del by synced) path.act)
-            boned  (~(del by boned) [%mailbox path.act])
+            boned  (~(del by boned) [%chatroom path.act])
           ==
       %-  zing
-      :~  (pull-wire [%mailbox path.act])
+      :~  (pull-wire [%chatroom path.act])
           (delete-permission [%chat path.act])
           ^-  (list move)
-          %+  turn  (prey:pubsub:userlib [%mailbox path.act] bol)
+          %+  turn  (prey:pubsub:userlib [%chatroom path.act] bol)
           |=  [=bone *]
           [bone %quit ~]
       ==
@@ -120,14 +120,14 @@
       ::  if neither ship = source or source = us, do nothing
       [~ this]
     ::  delete a foreign ship's path
-    :-  (pull-wire [%mailbox path.act])
+    :-  (pull-wire [%chatroom path.act])
     %_  this
       synced  (~(del by synced) path.act)
-      boned  (~(del by boned) [%mailbox path.act])
+      boned  (~(del by boned) [%chatroom path.act])
     ==
   ==
 ::
-++  peer-mailbox
+++  peer-chatroom
   |=  pax=path
   ^-  (quip move _this)
   ?>  ?=([* ^] pax)
@@ -170,7 +170,7 @@
   ::  if ship is not permitted, quit their subscription
   =/  mail-path
     (oust [(dec (lent t.pax)) (lent t.pax)] `(list @t)`t.pax)
-  =/  bne  (~(get by sup) [check-ship [%mailbox mail-path]])
+  =/  bne  (~(get by sup) [check-ship [%chatroom mail-path]])
   ?~(bne ~ [u.bne %quit ~]~)
 ::
 ++  diff-chat-update
@@ -192,11 +192,11 @@
     ?.  (~(has by synced) path.diff)
       [~ this]
     :_  this(synced (~(del by synced) path.diff))
-    [ost.bol %pull [%mailbox path.diff] [our.bol %chat-store] ~]~
+    [ost.bol %pull [%chatroom path.diff] [our.bol %chat-store] ~]~
   ::
       %message
     :_  this
-    %+  turn  (prey:pubsub:userlib [%mailbox path.diff] bol)
+    %+  turn  (prey:pubsub:userlib [%chatroom path.diff] bol)
     |=  [=bone *]
     ^-  move
     [bone %diff [%chat-update diff]]
@@ -226,7 +226,7 @@
       [~ this]
     :_  this(synced (~(del by synced) path.diff))
     :-  (chat-poke diff)
-    [ost.bol %pull [%mailbox path.diff] [src.bol %chat-hook] ~]~
+    [ost.bol %pull [%chatroom path.diff] [src.bol %chat-hook] ~]~
   ::
       %message
     :_  this
@@ -319,9 +319,9 @@
 ::
 ++  chat-scry
   |=  pax=path
-  ^-  (unit mailbox)
-  =.  pax  ;:(weld /=chat-store/(scot %da now.bol)/mailbox pax /noun)
-  .^((unit mailbox) %gx pax)
+  ^-  (unit chatroom)
+  =.  pax  ;:(weld /=chat-store/(scot %da now.bol)/chatroom pax /noun)
+  .^((unit chatroom) %gx pax)
 ::
 ++  permitted-scry
   |=  pax=path

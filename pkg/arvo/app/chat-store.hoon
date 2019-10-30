@@ -35,7 +35,7 @@
 ::
 ++  peek-x-all
   |=  pax=path
-  ^-  (unit (unit [%noun (map path mailbox)]))
+  ^-  (unit (unit [%noun (map path chatroom)]))
   [~ ~ %noun inbox]
 ::
 ++  peek-x-configs
@@ -49,32 +49,32 @@
   ^-  (unit (unit [%noun (set path)]))
   [~ ~ %noun ~(key by inbox)]
 ::
-++  peek-x-mailbox
+++  peek-x-chatroom
   |=  pax=path
-  ^-  (unit (unit [%noun (unit mailbox)]))
+  ^-  (unit (unit [%noun (unit chatroom)]))
   ?~  pax  ~
-  =/  mailbox=(unit mailbox)  (~(get by inbox) pax)
-  [~ ~ %noun mailbox]
+  =/  chatroom=(unit chatroom)  (~(get by inbox) pax)
+  [~ ~ %noun chatroom]
 ::
 ++  peek-x-config
   |=  pax=path
   ^-  (unit (unit [%noun config]))
   ?~  pax  ~
-  =/  mailbox  (~(get by inbox) pax)
-  ?~  mailbox  ~
+  =/  chatroom  (~(get by inbox) pax)
+  ?~  chatroom  ~
   :^  ~  ~  %noun
-  config.u.mailbox
+  config.u.chatroom
 ::
-++  peek-x-envelopes
+++  peek-x-messages
   |=  pax=path
-  ^-  (unit (unit [%noun (list envelope)]))
+  ^-  (unit (unit [%noun (list message)]))
   ?+  pax  ~
       [@ @ *]
     =/  mail-path  t.t.pax
-    =/  mailbox  (~(get by inbox) mail-path)
-    ?~  mailbox
+    =/  chatroom  (~(get by inbox) mail-path)
+    ?~  chatroom
       [~ ~ %noun ~]
-    =*  envelopes  envelopes.u.mailbox
+    =*  messages  messages.u.chatroom
     =/  sign-test=[?(%neg %pos) @]
       %-  need
       %+  rush  i.pax
@@ -89,18 +89,18 @@
           [%pos n]
         dem:ag
       ==
-    =*  length  length.config.u.mailbox
+    =*  length  length.config.u.chatroom
     =*  start  +.sign-test
     ?:  =(-.sign-test %neg)
       ?:  (gth start length)
-        [~ ~ %noun envelopes]
-      [~ ~ %noun (swag [(sub length start) start] envelopes)]
+        [~ ~ %noun messages]
+      [~ ~ %noun (swag [(sub length start) start] messages)]
     ::
     =/  end  (slav %ud i.t.pax)
     ?.  (lte start end)
       ~
     =.  end  ?:((lth end length) end length)
-    [~ ~ %noun (swag [start (sub end start)] envelopes)]
+    [~ ~ %noun (swag [start (sub end start)] messages)]
   ==
 ::
 ++  peer-keys
@@ -132,7 +132,7 @@
   ::  we now proxy all events to this path
   [~ this]
 ::
-++  peer-mailbox
+++  peer-chatroom
   |=  pax=path
   ^-  (quip move _this)
   ?>  (team:title our.bol src.bol)
@@ -168,14 +168,14 @@
   ?:  (~(has by inbox) pax)
     [~ this]
   :-  (send-diff pax act)
-  this(inbox (~(put by inbox) pax *mailbox))
+  this(inbox (~(put by inbox) pax *chatroom))
 ::
 ++  handle-delete
   |=  act=chat-action
   ^-  (quip move _this)
   ?>  ?=(%delete -.act)
-  =/  mailbox=(unit mailbox)  (~(get by inbox) path.act)
-  ?~  mailbox
+  =/  chatroom=(unit chatroom)  (~(get by inbox) path.act)
+  ?~  chatroom
     [~ this]
   :-  (send-diff path.act act)
   this(inbox (~(del by inbox) path.act))
@@ -184,30 +184,30 @@
   |=  act=chat-action
   ^-  (quip move _this)
   ?>  ?=(%message -.act)
-  =/  mailbox=(unit mailbox)  (~(get by inbox) path.act)
-  ?~  mailbox
+  =/  chatroom=(unit chatroom)  (~(get by inbox) path.act)
+  ?~  chatroom
     [~ this]
-  =*  letter  letter.envelope.act
-  =?  letter  &(?=(%code -.letter) ?=(~ output.letter))
-    =/  =hoon  (ream expression.letter)
-    letter(output (eval bol hoon))
-  =:  length.config.u.mailbox  +(length.config.u.mailbox)
-      number.envelope.act  +(length.config.u.mailbox)
-      envelopes.u.mailbox  (snoc envelopes.u.mailbox envelope.act)
+  =*  content  content.message.act
+  =?  content  &(?=(%code -.content) ?=(~ output.content))
+    =/  =hoon  (ream expression.content)
+    content(output (eval bol hoon))
+  =:  length.config.u.chatroom  +(length.config.u.chatroom)
+      number.message.act  +(length.config.u.chatroom)
+      messages.u.chatroom  (snoc messages.u.chatroom message.act)
   ==
   :-  (send-diff path.act act)
-  this(inbox (~(put by inbox) path.act u.mailbox))
+  this(inbox (~(put by inbox) path.act u.chatroom))
 ::
 ++  handle-read
   |=  act=chat-action
   ^-  (quip move _this)
   ?>  ?=(%read -.act)
-  =/  mailbox=(unit mailbox)  (~(get by inbox) path.act)
-  ?~  mailbox
+  =/  chatroom=(unit chatroom)  (~(get by inbox) path.act)
+  ?~  chatroom
     [~ this]
-  =.  read.config.u.mailbox  length.config.u.mailbox
+  =.  read.config.u.chatroom  length.config.u.chatroom
   :-  (send-diff path.act act)
-  this(inbox (~(put by inbox) path.act u.mailbox))
+  this(inbox (~(put by inbox) path.act u.chatroom))
 ::
 ++  update-subscribers
   |=  [pax=path act=chat-action]
@@ -222,7 +222,7 @@
   %-  zing
   :~  (update-subscribers /all act)
       (update-subscribers /updates act)
-      (update-subscribers [%mailbox pax] act)
+      (update-subscribers [%chatroom pax] act)
       ?.  |(=(%read -.act) =(%message -.act))
         ~
       (update-subscribers /configs act)

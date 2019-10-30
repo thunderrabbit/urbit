@@ -26,8 +26,8 @@ export class Sidebar extends Component {
     let sidebarItems = Object.keys(props.inbox)
       .map((box) => {
         let msg = props.messagePreviews[box];
-        let letter = _.has(msg, 'letter')
-          ? msg.letter
+        let content = _.has(msg, 'content')
+          ? msg.content
           : {text: 'No messages yet'};
         let author = !!msg ? msg.author : '';
         let when = !!msg ? msg.when : 0;
@@ -35,7 +35,7 @@ export class Sidebar extends Component {
           msg,
           when,
           author,
-          letter,
+          content,
           box,
           title: box,
           selected: station === box
@@ -51,7 +51,7 @@ export class Sidebar extends Component {
           <SidebarItem
             key={obj.box + '/' + obj.when}
             title={obj.title}
-            description={obj.letter}
+            description={obj.content}
             box={obj.box}
             when={obj.when}
             ship={obj.author}

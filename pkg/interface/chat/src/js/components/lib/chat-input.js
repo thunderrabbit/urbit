@@ -79,39 +79,39 @@ export class ChatInput extends Component {
     });
   }
 
-  getLetterType(letter) {
-    if (letter[0] === '#') {
-      letter = letter.slice(1);
+  getContentType(content) {
+    if (content[0] === '#') {
+      content = content.slice(1);
       // remove insignificant leading whitespace.
       // aces might be relevant to style.
-      while (letter[0] === '\n') {
-        letter = letter.slice(1);
+      while (content[0] === '\n') {
+        content = content.slice(1);
       }
 
       return {
         code: {
-          expression: letter,
+          expression: content,
           output: undefined
         }
       }
-    } else if (letter[0] === '@') {
-      letter = letter.slice(1);
+    } else if (content[0] === '@') {
+      content = content.slice(1);
       // remove insignificant leading whitespace.
       // aces might be relevant to style.
-      while (letter[0] === '\n') {
-        letter = letter.slice(1);
+      while (content[0] === '\n') {
+        content = content.slice(1);
       }
 
       return {
-        me: letter
+        me: content
       }
-    } else if (this.isUrl(letter)) {
+    } else if (this.isUrl(content)) {
        return {
-        url: letter
+        url: content
       }
     } else {
       return {
-        text: letter
+        text: content
       }
     }
   }
@@ -136,13 +136,13 @@ export class ChatInput extends Component {
       return;
     }
 
-    let letter = this.getLetterType(state.message);
+    let content = this.getContentType(state.message);
 
     props.api.chat.message(
       props.station,
       `~${window.ship}`,
       Date.now(),
-      letter
+      content
     );
 
     this.setState({

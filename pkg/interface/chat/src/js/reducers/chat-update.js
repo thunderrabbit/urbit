@@ -17,7 +17,7 @@ export class ChatUpdateReducer {
   message(json, state) {
     let data = _.get(json, 'message', false);
     if (data) {
-      state.inbox[data.path].envelopes.push(data.envelope);
+      state.inbox[data.path].messages.push(data.message);
     }
   }
 
@@ -25,8 +25,8 @@ export class ChatUpdateReducer {
     let data = _.get(json, 'messages', false);
     if (data) {
       console.log(data);
-      state.inbox[data.path].envelopes = 
-        data.envelopes.concat(state.inbox[data.path].envelopes);
+      state.inbox[data.path].messages = 
+        data.messages.concat(state.inbox[data.path].messages);
     }
   }
 
@@ -34,7 +34,7 @@ export class ChatUpdateReducer {
     let data = _.get(json, 'read', false);
     if (data) {
       state.inbox[data.path].config.read =
-        state.inbox[data.path].envelopes.length;
+        state.inbox[data.path].messages.length;
     }
   }
 
@@ -42,7 +42,7 @@ export class ChatUpdateReducer {
     let data = _.get(json, 'create', false);
     if (data) {
       state.inbox[`/~${data.ship}${data.path}`] = {
-        envelopes: [],
+        messages: [],
         config: {
           read:0,
           length: 0,
@@ -64,11 +64,11 @@ export class ChatUpdateReducer {
       return;
     }
 
-    let mailbox = state.pendingMessages.get(msg.path);
+    let chatroom = state.pendingMessages.get(msg.path);
 
-    for (let pendingMsg of mailbox) {
-      if (msg.envelope.uid === pendingMsg.uid) {
-        let index = mailbox.indexOf(pendingMsg);
+    for (let pendingMsg of chatroom) {
+      if (msg.message.uid === pendingMsg.uid) {
+        let index = chatroom.indexOf(pendingMsg);
         state.pendingMessages.get(msg.path).splice(index, 1);
       }
     }

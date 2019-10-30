@@ -9,34 +9,34 @@ export class Message extends Component {
 
   renderContent() {
     const { props } = this;
-    let letter = props.msg.letter;
+    let content = props.msg.content;
 
-    if ('code' in letter) {
+    if ('code' in content) {
       let outputElement = 
-        (!!letter.code.output && 
-         letter.code.output.length && letter.code.output.length > 0) ?
+        (!!content.code.output && 
+         content.code.output.length && content.code.output.length > 0) ?
         (
           <pre className="clamp-attachment pa1 mt0 mb0">
-            {letter.code.output[0].join('\n')}
+            {content.code.output[0].join('\n')}
           </pre>
         ) : null;
       return (
         <span>
           <pre className="clamp-attachment pa1 mt0 mb0 bg-light-gray">
-            {letter.code.expression}
+            {content.code.expression}
           </pre>
           {outputElement}
         </span>
       );
-    } else if ('url' in letter) {
+    } else if ('url' in content) {
       let imgMatch =
         /(jpg|img|png|gif|tiff|jpeg|JPG|IMG|PNG|TIFF|GIF|webp|WEBP|webm|WEBM)$/
-        .exec(letter.url);
-      let contents = letter.url;
+        .exec(content.url);
+      let contents = content.url;
       if (imgMatch) {
         contents = (
           <img
-            src={letter.url}
+            src={content.url}
             style={{
               width: "50%",
               maxWidth: "250px"
@@ -46,22 +46,22 @@ export class Message extends Component {
       }
       return (
         <a className="body-regular-400 v-top"
-          href={letter.url}
+          href={content.url}
           target="_blank"
           rel="noopener noreferrer">
           {contents}
         </a>
       );
-    } else if ('me' in letter) {
+    } else if ('me' in content) {
       return (
         <p className='body-regular-400 v-top'>
-          {letter.me}
+          {content.me}
         </p>
       );
     } else {
       return (
         <p className='body-regular-400 v-top'>
-          {letter.text}
+          {content.text}
         </p>
       );
     }

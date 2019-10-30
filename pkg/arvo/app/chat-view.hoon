@@ -122,15 +122,15 @@
     =/  start  (need (rush i.t.t.site.url dem))
     =/  end  (need (rush i.t.t.t.site.url dem))
     =/  pax  t.t.t.t.site.url
-    =/  envelopes  (envelope-scry [(scot %ud start) (scot %ud end) pax])
+    =/  messages  (messages-scry [(scot %ud start) (scot %ud end) pax])
     :_  this
     :~
       :+  ost.bol
         %http-response
       %-  json-response:app
       %-  json-to-octs 
-      %+  envelopes-update
-        envelopes
+      %+  messages-update
+        messages
       [start end pax]
     ==
   ::
@@ -201,7 +201,7 @@
   |=  pax=path
   ^-  (quip move _this)
   ?>  (team:title our.bol src.bol)
-  ::  create inbox with 100 messages max per mailbox and send that along
+  ::  create inbox with 100 messages max per chatroom and send that along
   ::  then quit the subscription
   :_  this
   [ost.bol %diff %json (inbox-to-json (truncate-inbox all-scry))]~
@@ -266,11 +266,11 @@
   =/  pok  [%permission-group-hook-action act]
   [ost.bol %poke / [our.bol %permission-group-hook] pok]
 ::
-++  envelope-scry
+++  messages-scry
   |=  pax=path
-  ^-  (list envelope)
-  =.  pax  ;:(weld /=chat-store/(scot %da now.bol)/envelopes pax /noun)
-  .^((list envelope) %gx pax)
+  ^-  (list message)
+  =.  pax  ;:(weld /=chat-store/(scot %da now.bol)/messages pax /noun)
+  .^((list message) %gx pax)
 ::
 ++  all-scry
   ^-  inbox
@@ -308,37 +308,35 @@
   ::
   ==
 ::
-++  envelopes-update
-  |=  [envelopes=(list envelope) start=@ud end=@ud pax=path]
+++  messages-update
+  |=  [messages=(list message) start=@ud end=@ud pax=path]
   ^-  json
   =,  enjs:format
   %+  frond  %chat-update
   %-  pairs
-  :~
-    :-  %messages
-    %-  pairs
-    :~  [%path (path pax)]
-        [%start (numb start)]
-        [%end (numb end)]
-        [%envelopes [%a (turn envelopes enve)]]
-    ==
+  :~  :-  %messages
+      %-  pairs
+      :~  [%path (path pax)]
+          [%start (numb start)]
+          [%end (numb end)]
+          [%messages [%a (turn messages mesg)]]
+      ==
   ==
 ::
-++  truncate-envelopes
-  |=  envelopes=(list envelope)
-  ^-  (list envelope)
-  =/  length  (lent envelopes)
+++  truncate-messages
+  |=  messages=(list message)
+  ^-  (list message)
+  =/  length  (lent messages)
   ?:  (lth length 100)
-    envelopes
-  (swag [(sub length 100) 100] envelopes)
+    messages
+  (swag [(sub length 100) 100] messages)
 ::
 ++  truncate-inbox
   |=  box=inbox
   ^-  inbox
   %-  ~(run by box)
-  |=  mail=mailbox
-  ^-  mailbox
-  :-  config.mail
-  (truncate-envelopes envelopes.mail)
+  |=  room=chatroom
+  ^-  chatroom
+  [config.room (truncate-messages messages.room)]
 ::
 --

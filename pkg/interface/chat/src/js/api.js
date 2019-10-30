@@ -62,9 +62,9 @@ class UrbitApi {
 
   addPendingMessage(msg) {
     if (store.state.pendingMessages.has(msg.path)) {
-      store.state.pendingMessages.get(msg.path).push(msg.envelope);
+      store.state.pendingMessages.get(msg.path).push(msg.message);
     } else {
-      store.state.pendingMessages.set(msg.path, [msg.envelope]);
+      store.state.pendingMessages.set(msg.path, [msg.message]);
     }
 
     store.setState({
@@ -96,16 +96,16 @@ class UrbitApi {
     this.action("chat-store", "json", data);
   }
 
-  chatMessage(path, author, when, letter) {
+  chatMessage(path, author, when, content) {
     let data = {
       message: {
         path,
-        envelope: {
+        message: {
           uid: uuid(),
           number: 0,
           author,
           when,
-          letter
+          content
         }
       }
     };

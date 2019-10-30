@@ -36,15 +36,15 @@ export class Root extends Component {
     let messagePreviews = {};
     let unreads = {};
     Object.keys(state.inbox).forEach((stat) => {
-      let envelopes = state.inbox[stat].envelopes;
+      let messages = state.inbox[stat].messages;
       
-      if (envelopes.length === 0) {
+      if (messages.length === 0) {
         messagePreviews[stat] = false;
       } else {
-        messagePreviews[stat] = envelopes[envelopes.length - 1];
+        messagePreviews[stat] = messages[messages.length - 1];
       }
 
-      unreads[stat] = envelopes.length > state.inbox[stat].config.read;
+      unreads[stat] = messages.length > state.inbox[stat].config.read;
     });
     
     let inviteConfig = false;
@@ -111,12 +111,12 @@ export class Root extends Component {
            render={ (props) => {
              let station =
                `/${props.match.params.ship}/${props.match.params.station}`;
-             let mailbox = state.inbox[station] || {
+             let chatroom = state.inbox[station] || {
                config: {
                  read: -1,
                  length: 0
                },
-               envelopes: []
+               messages: []
              };
 
              let write = state.groups[`/chat${station}/write`] || new Set([]);
@@ -126,8 +126,8 @@ export class Root extends Component {
                  <ChatScreen
                    api={api}
                    subscription={subscription}
-                   read={mailbox.config.read}
-                   envelopes={mailbox.envelopes}
+                   read={chatroom.config.read}
+                   messages={chatroom.messages}
                    inbox={state.inbox}
                    group={write}
                    permissions={state.permissions}
